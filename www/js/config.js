@@ -10,7 +10,7 @@ var APP_CONFIG = {
   },
   // Point this at the raw JSON file your GitHub Actions workflow publishes.
   // Format: https://raw.githubusercontent.com/<user>/<repo>/<branch>/data/outlook.json
-  sharedCacheUrl: 'https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/data/outlook.json',
+  sharedCacheUrl: 'https://raw.githubusercontent.com/Sid4884/True-Sentiment/main/data/outlook.json',
   defaultRefreshSeconds: 60,
   // Contrarian signal thresholds: if the crowd is this % (or more) short,
   // that's read as a BUY signal (fade them); this % (or more) long -> SELL.
