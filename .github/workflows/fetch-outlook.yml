@@ -22,6 +22,10 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Install script dependencies
+        working-directory: scripts
+        run: npm install
+
       - name: Fetch community outlook
         run: node scripts/fetch-outlook.js
 
