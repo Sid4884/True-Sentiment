@@ -1,26 +1,17 @@
 // ---------------------------------------------------------------------------
 // Runs in GitHub Actions on a schedule. Uses a headless browser (Puppeteer)
-// to load FXSSI's public "Forex Sentiment Live" page — the sentiment table
-// is filled in by JavaScript after the page loads, so a plain HTTP fetch
-// sees an empty shell. This waits for the real content, then parses it,
-// and writes a small JSON snapshot that every app install reads.
-//
-// No login, no account, anywhere in this script.
+// to load FXSSI's public "Forex Sentiment Live" page and pull the crowd
+// buy/sell percentages it displays — no login, no account, anywhere.
 //
 // FXSSI has no official API, so this reads their page's own rendered
-// output rather than a documented endpoint. It's fragile in the normal
-// way scraping is: if FXSSI restructures that page, this script may start
-// returning 0 symbols (harmless — the app just keeps showing its last
-// good data) or need a small selector/regex tweak.
+// output rather than a documented endpoint. Fragile in the normal way
+// scraping is: if FXSSI changes the page (or their bot-detection/consent
+// flow), this may need updating. It fails loudly with diagnostic output
+// rather than silently writing bad data — check the Actions log if it
+// fails; the app keeps showing its last good snapshot either way.
 //
-// COLUMN ORDER ASSUMPTION: the page lists two percentages per symbol that
-// sum to ~100 (buy% and sell%), inferred from FXSSI's own description of
-// the tool ("above 60% buyers = sell signal, below 40% buyers = buy
-// signal") rather than an explicit per-column label in the markup. This
-// script assumes: 1st number = buy% (mapped to longPercent), 2nd number =
-// sell% (mapped to shortPercent). VERIFY this against fxssi.com/tools/
-// current-ratio directly (blue bar = Buy%, orange bar = Sell%) before
-// trusting the signal — swap the two lines marked below if it's backwards.
+// COLUMN ORDER ASSUMPTION: unchanged from before — see README. Verify
+// against the live page before trusting the Buy/Sell signal.
 // ---------------------------------------------------------------------------
 
 const fs = require('fs');
@@ -40,6 +31,27 @@ function stripHtml(html) {
     .replace(/\s+/g, ' ');
 }
 
+async function dismissCookieBanner(page) {
+  try {
+    const clicked = await page.evaluate(() => {
+      const candidates = Array.from(document.querySelectorAll('button, a'));
+      const target = candidates.find((el) =>
+        /accept all|accept cookies|agree/i.test(el.textContent || '')
+      );
+      if (target) {
+        target.click();
+        return true;
+      }
+      return false;
+    });
+    if (clicked) {
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  } catch (e) {
+    // Non-fatal — proceed either way.
+  }
+}
+
 async function fetchRenderedHtml() {
   const browser = await puppeteer.launch({
     headless: true,
@@ -47,33 +59,44 @@ async function fetchRenderedHtml() {
   });
   try {
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (compatible; SentimentPulseBot/1.0)');
-    await page.goto(URL, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.setViewport({ width: 1366, height: 900 });
+    // Spoof the automation flag some sites check for.
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    });
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    );
 
-    // The sentiment table is filled in async; give it a moment to appear.
-    // We don't know the exact selector, so wait for text that only shows
-    // up once real data has loaded (a known pair symbol).
+    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+    await dismissCookieBanner(page);
+
+    // The sentiment table is filled in async; wait for real data to appear
+    // rather than a fixed delay.
+    let dataAppeared = true;
     try {
       await page.waitForFunction(
         () => document.body.innerText.includes('EURUSD'),
-        { timeout: 15000 }
+        { timeout: 20000 }
       );
     } catch (e) {
-      // Fall through anyway — main() will fail loudly if parsing finds nothing.
+      dataAppeared = false;
     }
 
-    return await page.content();
+    const html = await page.content();
+    const bodyTextSnippet = await page.evaluate(() => document.body.innerText.slice(0, 500));
+
+    return { html, dataAppeared, bodyTextSnippet };
   } finally {
     await browser.close();
   }
 }
 
 async function main() {
-  const html = await fetchRenderedHtml();
+  const { html, dataAppeared, bodyTextSnippet } = await fetchRenderedHtml();
   const text = stripHtml(html);
 
-  // Looks for: SYMBOL (6 uppercase letters) ... NN% ... MM%  within a short span,
-  // matching the "Quick Sentiment" table's SYMBOL / buy% / sell% layout.
   const pattern = /\b([A-Z]{6})\b[^%A-Z]{0,15}(\d{1,3})%[^%A-Z]{0,15}(\d{1,3})%/g;
 
   const symbols = {};
@@ -82,9 +105,6 @@ async function main() {
     const [, symbol, buyPct, sellPct] = match;
     const buy = parseFloat(buyPct);
     const sell = parseFloat(sellPct);
-    // Sanity check: the two numbers should roughly sum to 100. If they
-    // don't, this probably isn't a real sentiment row (a false-positive
-    // match elsewhere on the page) — skip it.
     if (Math.abs(buy + sell - 100) > 5) continue;
 
     symbols[symbol] = {
@@ -94,7 +114,12 @@ async function main() {
   }
 
   if (Object.keys(symbols).length === 0) {
-    throw new Error('Parsed 0 symbols from FXSSI page — the page structure likely changed; the regex/selector in this script needs updating.');
+    console.error('--- DIAGNOSTIC INFO ---');
+    console.error('Did "EURUSD" appear in the rendered page text?', dataAppeared);
+    console.error('First 500 chars of rendered page body text:');
+    console.error(bodyTextSnippet);
+    console.error('-----------------------');
+    throw new Error('Parsed 0 symbols from FXSSI page — see diagnostic output above.');
   }
 
   const output = {
