@@ -1,4 +1,4 @@
-name: Fetch Myfxbook community outlook
+name: Fetch FXSSI forex sentiment
 
 on:
   schedule:
@@ -20,12 +20,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Fetch community outlook
-        env:
-          MYFXBOOK_EMAIL: ${{ secrets.MYFXBOOK_EMAIL }}
-          MYFXBOOK_PASSWORD: ${{ secrets.MYFXBOOK_PASSWORD }}
         run: node scripts/fetch-outlook.js
 
       - name: Commit and push if changed
