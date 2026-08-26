@@ -1,0 +1,23 @@
+{
+  "name": "sentiment-pulse",
+  "displayName": "SentimentPulse",
+  "version": "1.0.0",
+  "description": "Live technical-sentiment signals for forex, indices and commodities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no test specified\""
+  },
+  "cordova": {
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-network-information": {}
+    }
+  },
+  "devDependencies": {
+    "cordova-android": "^13.0.0"
+  }
+}
