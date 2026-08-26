@@ -1,14 +1,17 @@
 // ---------------------------------------------------------------------------
-// Runs in GitHub Actions on a schedule. Fetches FXSSI's public "Forex
-// Sentiment Live" page (fxssi.com/tools/current-ratio) — no login, no
-// account, genuinely public — and writes a small JSON snapshot that every
-// app install reads.
+// Runs in GitHub Actions on a schedule. Uses a headless browser (Puppeteer)
+// to load FXSSI's public "Forex Sentiment Live" page — the sentiment table
+// is filled in by JavaScript after the page loads, so a plain HTTP fetch
+// sees an empty shell. This waits for the real content, then parses it,
+// and writes a small JSON snapshot that every app install reads.
 //
-// FXSSI has no official API, so this parses their page's own rendered
-// output rather than calling a documented endpoint. It's fragile in the
-// normal way scraping is: if FXSSI restructures that page, this script
-// will start returning 0 symbols (harmless — the app just keeps showing
-// its last good data) or need a small regex tweak.
+// No login, no account, anywhere in this script.
+//
+// FXSSI has no official API, so this reads their page's own rendered
+// output rather than a documented endpoint. It's fragile in the normal
+// way scraping is: if FXSSI restructures that page, this script may start
+// returning 0 symbols (harmless — the app just keeps showing its last
+// good data) or need a small selector/regex tweak.
 //
 // COLUMN ORDER ASSUMPTION: the page lists two percentages per symbol that
 // sum to ~100 (buy% and sell%), inferred from FXSSI's own description of
@@ -22,6 +25,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer');
 
 const URL = 'https://fxssi.com/tools/current-ratio';
 const OUT_PATH = path.join(__dirname, '..', 'data', 'outlook.json');
@@ -36,12 +40,36 @@ function stripHtml(html) {
     .replace(/\s+/g, ' ');
 }
 
-async function main() {
-  const res = await fetch(URL, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SentimentPulseBot/1.0)' }
+async function fetchRenderedHtml() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  if (!res.ok) throw new Error(`FXSSI fetch failed (${res.status})`);
-  const html = await res.text();
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (compatible; SentimentPulseBot/1.0)');
+    await page.goto(URL, { waitUntil: 'networkidle2', timeout: 30000 });
+
+    // The sentiment table is filled in async; give it a moment to appear.
+    // We don't know the exact selector, so wait for text that only shows
+    // up once real data has loaded (a known pair symbol).
+    try {
+      await page.waitForFunction(
+        () => document.body.innerText.includes('EURUSD'),
+        { timeout: 15000 }
+      );
+    } catch (e) {
+      // Fall through anyway — main() will fail loudly if parsing finds nothing.
+    }
+
+    return await page.content();
+  } finally {
+    await browser.close();
+  }
+}
+
+async function main() {
+  const html = await fetchRenderedHtml();
   const text = stripHtml(html);
 
   // Looks for: SYMBOL (6 uppercase letters) ... NN% ... MM%  within a short span,
@@ -66,7 +94,7 @@ async function main() {
   }
 
   if (Object.keys(symbols).length === 0) {
-    throw new Error('Parsed 0 symbols from FXSSI page — the page structure likely changed; the regex in this script needs updating.');
+    throw new Error('Parsed 0 symbols from FXSSI page — the page structure likely changed; the regex/selector in this script needs updating.');
   }
 
   const output = {

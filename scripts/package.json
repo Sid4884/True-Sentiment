@@ -1,0 +1,9 @@
+{
+  "name": "fetch-outlook-script",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Fetches FXSSI's public sentiment page for the GitHub Actions workflow",
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}
