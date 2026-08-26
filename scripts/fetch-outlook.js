@@ -85,16 +85,16 @@ async function fetchRenderedHtml() {
     }
 
     const html = await page.content();
-    const bodyTextSnippet = await page.evaluate(() => document.body.innerText.slice(0, 500));
+    const bodyText = await page.evaluate(() => document.body.innerText);
 
-    return { html, dataAppeared, bodyTextSnippet };
+    return { html, dataAppeared, bodyText };
   } finally {
     await browser.close();
   }
 }
 
 async function main() {
-  const { html, dataAppeared, bodyTextSnippet } = await fetchRenderedHtml();
+  const { html, dataAppeared, bodyText } = await fetchRenderedHtml();
   const text = stripHtml(html);
 
   const pattern = /\b([A-Z]{6})\b[^%A-Z]{0,15}(\d{1,3})%[^%A-Z]{0,15}(\d{1,3})%/g;
@@ -114,10 +114,15 @@ async function main() {
   }
 
   if (Object.keys(symbols).length === 0) {
+    const idx = bodyText.indexOf('EURUSD');
     console.error('--- DIAGNOSTIC INFO ---');
     console.error('Did "EURUSD" appear in the rendered page text?', dataAppeared);
-    console.error('First 500 chars of rendered page body text:');
-    console.error(bodyTextSnippet);
+    console.error('Total "%" characters found anywhere in body text:', (bodyText.match(/%/g) || []).length);
+    console.error('Total "EURUSD" occurrences in body text:', (bodyText.match(/EURUSD/g) || []).length);
+    if (idx !== -1) {
+      console.error('200 characters of body text AROUND the first "EURUSD" match:');
+      console.error(JSON.stringify(bodyText.slice(Math.max(0, idx - 100), idx + 100)));
+    }
     console.error('-----------------------');
     throw new Error('Parsed 0 symbols from FXSSI page — see diagnostic output above.');
   }
