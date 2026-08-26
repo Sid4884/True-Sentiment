@@ -1,0 +1,37 @@
+name: Fetch Myfxbook community outlook
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub's cron has no strict minimum, but scheduling
+    # tighter than ~15 min is unreliable in practice (runs get queued/skipped
+    # under load) and there's no benefit to polling Myfxbook faster than
+    # your app's own refresh interval anyway.
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write # needed to commit the updated data/outlook.json back to the repo
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Fetch community outlook
+        env:
+          MYFXBOOK_EMAIL: ${{ secrets.MYFXBOOK_EMAIL }}
+          MYFXBOOK_PASSWORD: ${{ secrets.MYFXBOOK_PASSWORD }}
+        run: node scripts/fetch-outlook.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/outlook.json
+          git diff --staged --quiet || git commit -m "chore: update community outlook snapshot"
+          git push
