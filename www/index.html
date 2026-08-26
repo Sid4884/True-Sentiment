@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com https://raw.githubusercontent.com https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src https://raw.githubusercontent.com;">
+    <title>SentimentPulse</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-dial" aria-hidden="true"></span>
+                <span class="brand-name">Sentiment<b>Pulse</b></span>
+            </div>
+            <div class="topbar-right">
+                <span id="liveStatus" class="live-status live-status--off">
+                    <span class="live-dot"></span><span class="live-text">not configured</span>
+                </span>
+                <button id="settingsBtn" class="icon-btn" aria-label="Settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3a7.9 7.9 0 00-.14-1.4l2.11-1.65a.5.5 0 00.12-.64l-2-3.46a.5.5 0 00-.6-.22l-2.49 1a8 8 0 00-1.2-.7l-.38-2.65a.5.5 0 00-.5-.43h-4a.5.5 0 00-.5.43l-.38 2.65a8 8 0 00-1.2.7l-2.49-1a.5.5 0 00-.6.22l-2 3.46a.5.5 0 00.12.64L4.2 9.6a8 8 0 000 2.8L2.09 14a.5.5 0 00-.12.64l2 3.46a.5.5 0 00.6.22l2.49-1c.37.28.78.51 1.2.7l.38 2.65a.5.5 0 00.5.43h4a.5.5 0 00.5-.43l.38-2.65c.42-.19.83-.42 1.2-.7l2.49 1a.5.5 0 00.6-.22l2-3.46a.5.5 0 00-.12-.64l-2.11-1.6c.09-.46.14-.93.14-1.4z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <nav class="tabs" id="tabs">
+            <button class="tab tab--active" data-group="forex">Forex</button>
+            <button class="tab" data-group="metals">Metals</button>
+        </nav>
+
+        <div class="subbar">
+            <span id="updatedAt" class="updated-at">Not updated yet</span>
+            <button id="refreshBtn" class="text-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4l-2.35 2.35z"/></svg>
+                Refresh
+            </button>
+        </div>
+
+        <main class="cards" id="cardGrid">
+            <!-- cards injected by app.js -->
+        </main>
+
+        <p class="disclaimer">
+            Signal is a contrarian read of real Myfxbook retail long/short positioning — when the crowd is
+            heavily one-sided, the app flags the opposite direction. This is not broker-independent price
+            data and not financial advice.
+        </p>
+    </div>
+
+    <!-- Settings modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Signal thresholds</h2>
+            <p class="modal-copy">
+                Sentiment is read from a shared snapshot published every ~30 minutes — no login needed.
+                Set crowd % (long or short) needed to trigger a Buy or Sell signal.
+            </p>
+            <label class="field-label" for="buyThreshold">Buy when crowd short% is at least</label>
+            <input id="buyThreshold" class="field-input" type="number" min="50" max="99" value="70">
+            <label class="field-label" for="sellThreshold">Sell when crowd long% is at least</label>
+            <input id="sellThreshold" class="field-input" type="number" min="50" max="99" value="70">
+
+            <hr class="modal-divider">
+
+            <label class="field-label" for="refreshInterval">Auto-refresh interval</label>
+            <select id="refreshInterval" class="field-input">
+                <option value="60" selected>1 minute</option>
+                <option value="300">5 minutes</option>
+                <option value="900">15 minutes</option>
+                <option value="0">Manual only</option>
+            </select>
+
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn btn--ghost">Cancel</button>
+                <button id="modalSave" class="btn btn--primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="cordova.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/gauge.js"></script>
+    <script src="js/sentiment.js"></script>
+    <script src="js/sharedCache.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
