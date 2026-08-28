@@ -1,86 +1,86 @@
 {
-  "updatedAt": "2026-08-27T21:07:09.415Z",
+  "updatedAt": "2026-08-28T05:34:37.595Z",
   "source": "fxssi-current-ratio",
   "symbols": {
     "BTCUSD": {
-      "longPercent": 25.55,
-      "shortPercent": 74.45
+      "longPercent": 26.06,
+      "shortPercent": 73.94
     },
     "ETHUSD": {
-      "longPercent": 88.97,
-      "shortPercent": 11.03
+      "longPercent": 87.11,
+      "shortPercent": 12.89
     },
     "AUDJPY": {
-      "longPercent": 22.79,
-      "shortPercent": 77.21
+      "longPercent": 22.2,
+      "shortPercent": 77.8
     },
     "AUDUSD": {
-      "longPercent": 25.41,
-      "shortPercent": 74.59
+      "longPercent": 24.08,
+      "shortPercent": 75.92
     },
     "XBRUSD": {
-      "longPercent": 61.35,
-      "shortPercent": 38.65
+      "longPercent": 63.83,
+      "shortPercent": 36.17
     },
     "EURAUD": {
-      "longPercent": 77.48,
-      "shortPercent": 22.52
+      "longPercent": 78.31,
+      "shortPercent": 21.69
     },
     "EURGBP": {
-      "longPercent": 35.03,
-      "shortPercent": 64.97
+      "longPercent": 34.73,
+      "shortPercent": 65.27
     },
     "EURJPY": {
-      "longPercent": 27.28,
-      "shortPercent": 72.72
+      "longPercent": 26.58,
+      "shortPercent": 73.42
     },
     "EURUSD": {
-      "longPercent": 31.16,
-      "shortPercent": 68.84
+      "longPercent": 32.24,
+      "shortPercent": 67.76
     },
     "GBPJPY": {
-      "longPercent": 41.87,
-      "shortPercent": 58.13
+      "longPercent": 41.22,
+      "shortPercent": 58.78
     },
     "GBPUSD": {
-      "longPercent": 42.61,
-      "shortPercent": 57.39
+      "longPercent": 42.9,
+      "shortPercent": 57.1
     },
     "NZDUSD": {
-      "longPercent": 36.71,
-      "shortPercent": 63.29
+      "longPercent": 35.04,
+      "shortPercent": 64.96
     },
     "USDCAD": {
-      "longPercent": 50.66,
-      "shortPercent": 49.34
+      "longPercent": 51.03,
+      "shortPercent": 48.97
     },
     "USDCHF": {
-      "longPercent": 70.87,
-      "shortPercent": 29.13
+      "longPercent": 69.63,
+      "shortPercent": 30.37
     },
     "USDJPY": {
-      "longPercent": 51.57,
-      "shortPercent": 48.43
+      "longPercent": 49.64,
+      "shortPercent": 50.36
     },
     "XTIUSD": {
-      "longPercent": 71.09,
-      "shortPercent": 28.91
+      "longPercent": 69.86,
+      "shortPercent": 30.14
     },
     "XAGUSD": {
-      "longPercent": 58.72,
-      "shortPercent": 41.28
+      "longPercent": 66.86,
+      "shortPercent": 33.14
     },
     "XAUUSD": {
-      "longPercent": 61.29,
-      "shortPercent": 38.71
+      "longPercent": 59.54,
+      "shortPercent": 40.46
     },
     "GBPCHF": {
-      "longPercent": 52.77,
-      "shortPercent": 47.23
+      "longPercent": 52.39,
+      "shortPercent": 47.61
     },
     "EURCHF": {
-      "longPercent": 43.78,
-      "shortPercent": 56.22
+      "longPercent": 43.96,
+      "shortPercent": 56.04
     }
   }
 }
