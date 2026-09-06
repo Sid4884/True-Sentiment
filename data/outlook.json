@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-06T13:03:56.665Z",
+  "updatedAt": "2026-09-06T18:35:09.692Z",
   "source": "fxssi-current-ratio",
   "symbols": {
     "BTCUSD": {
@@ -7,8 +7,8 @@
       "shortPercent": 45.02
     },
     "ETHUSD": {
-      "longPercent": 85.36,
-      "shortPercent": 14.64
+      "longPercent": 85.37,
+      "shortPercent": 14.63
     },
     "AUDJPY": {
       "longPercent": 60.8,
